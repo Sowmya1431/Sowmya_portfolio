@@ -1,5 +1,8 @@
 import { Section, Reveal } from "./Section";
 import { Github, ExternalLink, Wallet, Hand, Users2 } from "lucide-react";
+import trackifyImage from "../../assets/trackify-dashboard.png";
+import gestureImage from "../../assets/gesture-media-player.png";
+import crowdCountImage from "../../assets/crowd-count-analytics.png";
 
 const projects = [
   {
@@ -10,7 +13,7 @@ const projects = [
     stack: ["MongoDB", "Express", "React", "Node.js", "JWT"],
     github: "https://github.com/Sowmya1431/finance_tracker",
     accent: "from-cyan-400/30 to-blue-500/30",
-    imageUrl: "/src/assets/trackify-dashboard.png",
+    imageUrl: trackifyImage,
   },
   {
     Icon: Hand,
@@ -21,7 +24,7 @@ const projects = [
     github: "https://github.com/Sowmya1431/gesture_controlled_media_player_desktop",
     liveUrl: "https://gesture-controlled-media-player.onrender.com",
     accent: "from-purple-400/30 to-pink-500/30",
-    imageUrl: "/src/assets/gesture-media-player.png",
+    imageUrl: gestureImage,
   },
   {
     Icon: Users2,
@@ -31,7 +34,7 @@ const projects = [
     stack: ["YOLO", "React", "Python"],
     github: "https://github.com/Sowmya1431/Crowd_count_video_analytics",
     accent: "from-emerald-400/30 to-teal-500/30",
-    imageUrl: "/src/assets/crowd-count-analytics.png",
+    imageUrl: crowdCountImage,
   },
 ];
 
