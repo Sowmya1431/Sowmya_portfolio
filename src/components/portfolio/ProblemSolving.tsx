@@ -106,57 +106,99 @@ export function ProblemSolving() {
 
   // Try public LeetCode mirrors. Fail silently → keep authentic fallback.
   useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const res = await fetch(`https://alfa-leetcode-api.onrender.com/userProfile/${LEETCODE_USERNAME}`);
-        if (!res.ok) throw new Error("api");
-        const j = await res.json();
-        if (cancelled || !j) return;
-        const next: Stats = {
-          totalSolved: j.totalSolved ?? FALLBACK.totalSolved,
-          easy: j.easySolved ?? FALLBACK.easy,
-          medium: j.mediumSolved ?? FALLBACK.medium,
-          hard: j.hardSolved ?? FALLBACK.hard,
-          maxStreak: FALLBACK.maxStreak,
-          activeDays: FALLBACK.activeDays,
-          totalSubmissions: j.totalSubmissions?.[0]?.submissions ?? FALLBACK.totalSubmissions,
-        };
-        // Calendar
-        try {
-          const cal = await fetch(`https://alfa-leetcode-api.onrender.com/userProfileCalendar?username=${LEETCODE_USERNAME}`);
-          if (cal.ok) {
-            const cj = await cal.json();
-            const raw = cj?.data?.matchedUser?.userCalendar?.submissionCalendar;
-            if (raw) {
-              const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
-              const map: Record<string, number> = {};
-              let streak = 0;
-              let active = 0;
-              for (const [ts, count] of Object.entries(parsed)) {
-                const d = new Date(Number(ts) * 1000).toISOString().slice(0, 10);
-                map[d] = Number(count);
-                if (Number(count) > 0) active++;
-              }
-              next.calendar = map;
-              next.activeDays = active || FALLBACK.activeDays;
-              const cu = cj?.data?.matchedUser?.userCalendar;
-              if (cu?.streak) streak = cu.streak;
-              if (streak) next.maxStreak = streak;
-            }
-          }
-        } catch {}
-        if (!cancelled) {
-          setStats(next);
-          setLive(true);
-        }
-      } catch {
-        // keep fallback
-      }
-    })();
-    return () => { cancelled = true; };
-  }, []);
+  let cancelled = false;
 
+  const computeCalendarStats = (parsed: Record<string, any>) => {
+    const map: Record<string, number> = {};
+    let activeDays = 0;
+    let currentStreak = 0;
+    let maxStreak = 0;
+
+    const entries = Object.entries(parsed)
+      .map(([ts, count]) => ({
+        date: new Date(Number(ts) * 1000),
+        count: Number(count),
+      }))
+      .sort((a, b) => a.date.getTime() - b.date.getTime());
+
+    for (const entry of entries) {
+      const key = entry.date.toISOString().slice(0, 10);
+      map[key] = entry.count;
+
+      if (entry.count > 0) {
+        activeDays++;
+        currentStreak++;
+        maxStreak = Math.max(maxStreak, currentStreak);
+      } else {
+        currentStreak = 0;
+      }
+    }
+
+    return { map, activeDays, maxStreak };
+  };
+
+  (async () => {
+    try {
+      const profileRes = await fetch(
+        `https://alfa-leetcode-api.onrender.com/userProfile/${LEETCODE_USERNAME}`
+      );
+
+      if (!profileRes.ok) throw new Error("Profile API failed");
+
+      const profile = await profileRes.json();
+
+      const next: Stats = {
+        totalSolved: profile.totalSolved ?? FALLBACK.totalSolved,
+        easy: profile.easySolved ?? FALLBACK.easy,
+        medium: profile.mediumSolved ?? FALLBACK.medium,
+        hard: profile.hardSolved ?? FALLBACK.hard,
+        maxStreak: FALLBACK.maxStreak,
+        activeDays: FALLBACK.activeDays,
+        totalSubmissions:
+          profile.totalSubmissions?.[0]?.submissions ??
+          FALLBACK.totalSubmissions,
+      };
+
+      try {
+        const calRes = await fetch(
+          `https://alfa-leetcode-api.onrender.com/userProfileCalendar?username=${LEETCODE_USERNAME}`
+        );
+
+        if (calRes.ok) {
+          const calendarJson = await calRes.json();
+
+          const raw =
+            calendarJson?.data?.matchedUser?.userCalendar
+              ?.submissionCalendar;
+
+          if (raw) {
+            const parsed =
+              typeof raw === "string" ? JSON.parse(raw) : raw;
+
+            const computed = computeCalendarStats(parsed);
+
+            next.calendar = computed.map;
+            next.activeDays = computed.activeDays;
+            next.maxStreak = computed.maxStreak;
+          }
+        }
+      } catch (err) {
+        console.log("Calendar fetch failed:", err);
+      }
+
+      if (!cancelled) {
+        setStats(next);
+        setLive(true);
+      }
+    } catch (err) {
+      console.log("Profile fetch failed:", err);
+    }
+  })();
+
+  return () => {
+    cancelled = true;
+  };
+}, []);
   const difficultyCards = [
     { label: "Easy", value: stats.easy, color: "from-emerald-400/20 to-emerald-600/20", textColor: "text-emerald-400" },
     { label: "Medium", value: stats.medium, color: "from-amber-400/20 to-orange-500/20", textColor: "text-amber-400" },
@@ -165,7 +207,7 @@ export function ProblemSolving() {
 
   const statCards = [
     { label: "Max Streak", value: stats.maxStreak, unit: "days" },
-    { label: "Active Coding", value: stats.activeDays, unit: "days" },
+    
     { label: "Total Submissions", value: stats.totalSubmissions },
   ];
 
