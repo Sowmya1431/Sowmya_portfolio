@@ -1,8 +1,10 @@
 import { Section, Reveal } from "./Section";
+import { Brain } from "lucide-react";
 import { Github, ExternalLink, Wallet, Hand, Users2 } from "lucide-react";
 import trackifyImage from "../../assets/trackify-dashboard.png";
 import gestureImage from "../../assets/gesture-media-player.png";
 import crowdCountImage from "../../assets/crowd-count-analytics.png";
+import hirelensImage from "../../assets/hirelensimage.png";
 
 const projects = [
   {
@@ -26,6 +28,17 @@ const projects = [
     accent: "from-purple-400/30 to-pink-500/30",
     imageUrl: gestureImage,
   },
+  {
+  Icon: Brain,
+  title: "HireLens AI",
+  subtitle: "GenAI · ATS Resume Analyzer",
+  desc: "AI-powered ATS resume analyzer that matches resumes with job descriptions, calculates ATS scores, identifies missing skills, and provides resume optimization with interview preparation assistance.",
+  stack: ["MERN", "Groq LLaMA", "PDF Parser"],
+  github: "https://github.com/Sowmya1431/HireLens_AI",
+  liveUrl: "",
+  accent: "from-cyan-400/30 to-blue-500/30",
+  imageUrl: hirelensImage,
+},
   {
     Icon: Users2,
     title: "Crowd Count Video Analytics",
